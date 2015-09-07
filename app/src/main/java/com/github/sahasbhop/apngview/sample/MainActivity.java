@@ -46,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
 //			String assetName = "00BA08BA557D66FE8B69397B27E6D3EE.png";
 //			String assetName = "55F7AAB0AB28AA3F89E5B27F4ED08ECF.png";
 //			String assetName = "A9041AB7916E493C6381F96B5EE29C3D.png";
-//			String assetName = "B74DEA83B6791665C515ECC972826826.png";
+			String assetName = "B74DEA83B6791665C515ECC972826826.png";
 //			String assetName = "avatar_talk_1.png";
-            String assetName = "apng_geneva_drive.png";
+//            String assetName = "apng_geneva_drive.png";
 
 //			Uri uri = Uri.parse(url);
             Uri uri = Uri.parse("assets://apng/" + assetName);

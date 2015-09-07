@@ -58,7 +58,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	private int numPlays;
 	
 	private float mScaling;
-	
+
 	public ApngDrawable(Context context, Bitmap bitmap, Uri uri) {
 		super();
 		
@@ -291,7 +291,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 			mScaling = scalingByWidth <= scalingByHeight ? scalingByWidth : scalingByHeight;
 			if (VERBOSE) FLog.v("mScaling: %.2f", mScaling);
 		}
-		
+
 		RectF dst = new RectF(0, 0, mScaling * baseWidth, mScaling * baseHeight);
 		canvas.drawBitmap(baseBitmap, null, dst, paint);
 		
@@ -318,9 +318,9 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	private Bitmap createBitmap(int frameIndex) {
 		if (VERBOSE) FLog.v("ENTER");
 		File baseFile = new File(imagePath);
-		
+
 		Bitmap baseBitmap = null;
-		
+
 		PngChunkFCTL previousChunk = frameIndex > 0 ? fctlArrayList.get(frameIndex - 1) : null;
 		
 		if (previousChunk != null) {
