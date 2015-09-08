@@ -26,9 +26,7 @@ import ar.com.hjg.pngj.chunks.PngChunkIHDR;
 
 /**
  * Source are taken from: https://github.com/leonbloy/pngj
- * <p/>
- * This is low level, it does not use PngReaderApgn
- * <p/>
+ * This is low level, it does not use PngReaderApng
  * Extracts animation frames from APGN file to several PNG files<br>
  * Low level, very efficient. Does not compose frames<br>
  * Warning: this writes lots of files, in the same dir as the original PNGs.<br>

@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
 
+ext {
+    libraryName = 'apng-view'
+    artifact = 'apng-view'
+}
+
 android {
     compileSdkVersion 22
     buildToolsVersion "23.0.1"
@@ -8,7 +13,7 @@ android {
         minSdkVersion 10
         targetSdkVersion 22
         versionCode 1
-        versionName "0.9"
+        versionName "1.0"
     }
     buildTypes {
         release {
@@ -24,3 +29,6 @@ dependencies {
     compile 'com.github.sahasbhop:formatted-log:0.0.5'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.4'
 }
+
+apply from: '../install.gradle'
+apply from: '../bintray.gradle'
