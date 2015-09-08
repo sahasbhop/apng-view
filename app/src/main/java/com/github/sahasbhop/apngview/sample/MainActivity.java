@@ -60,4 +60,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        if (apngView != null && apngView.getDrawable() instanceof ApngDrawable) {
+            ((ApngDrawable) apngView.getDrawable()).recycleBitmaps();
+        }
+        super.onStop();
+    }
 }
