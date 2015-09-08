@@ -1,7 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.sahasbhop.apngview">
 
-    <application android:allowBackup="true" android:label="@string/app_name">
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name">
 
     </application>
 
