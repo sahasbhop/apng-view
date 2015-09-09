@@ -14,6 +14,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.SystemClock;
 
+import com.github.sahasbhop.apngview.assist.ApngExtractFrames;
+import com.github.sahasbhop.apngview.assist.AssistUtil;
 import com.github.sahasbhop.flog.FLog;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -76,7 +78,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 			.cacheOnDisk(true)
 			.build();
 		
-		File workingDir = ApngHelper.getWorkingDir(context);
+		File workingDir = AssistUtil.getWorkingDir(context);
 		
 		workingPath = workingDir.getPath();
         sourceUri = uri;
@@ -91,66 +93,36 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
         if (DEBUG) FLog.d("Bitmap size: %dx%d", baseWidth, baseHeight);
 	}
 
-	@SuppressWarnings("unused")
+	/**
+	 * Set callback to know when an animation is started or stopped
+	 * @param callback Callback listener
+	 */
 	public void setCallback(ApngCallback callback) {
 		apngCallback = callback;
 	}
 
-	@SuppressWarnings("unused")
+	/**
+	 * @return number of repeating
+	 */
 	public int getNumPlays() {
 		return numPlays;
 	}
 
-    @SuppressWarnings("unused")
+	/**
+	 * Specify number of repeating. Note that this will override the value described in APNG file
+	 * @param numPlays Number of repeating
+	 */
 	public void setNumPlays(int numPlays) {
 		this.numPlays = numPlays;
 	}
 
-	@SuppressWarnings("unused")
+	/**
+	 * @return total number of frames
+	 */
 	public int getNumFrames() {
 		return numFrames;
 	}
 	
-	public void prepare() {
-        String imagePath = getImagePathFromUri();
-        if (imagePath == null) return;
-
-        baseFile = new File(imagePath);
-
-		if (DEBUG) FLog.d("Extracting PNGs..");
-        ApngExtractFrames.process(baseFile);
-		if (DEBUG) FLog.d("Extracting complete");
-		
-		if (DEBUG) FLog.d("Read APNG information..");
-		readApngInformation(baseFile);
-
-        isPrepared = true;
-	}
-
-    private String getImagePathFromUri() {
-        if (sourceUri == null) return null;
-
-        String imagePath = null;
-
-        try {
-            String filename = sourceUri.getLastPathSegment();
-
-            File file = new File(workingPath, filename);
-
-            if (!file.exists()) {
-                if (VERBOSE) FLog.v("Copy file from %s to %s", sourceUri.getPath(), file.getPath());
-                FileUtils.copyFile(new File(sourceUri.getPath()), file);
-            }
-
-            imagePath = file.getPath();
-
-        } catch (Exception e) {
-            FLog.e("Error: %s", e.toString());
-        }
-
-        return imagePath;
-    }
-
     @Override
 	public void start() {
 		if (!isRunning()) {
@@ -208,16 +180,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
         }
 	}
 
-	public void recycleBitmaps() {
-		if (bitmapArray == null) return;
-
-        for (int i = 1; i < bitmapArray.length; i++) {
-            if (bitmapArray[i] == null) continue;
-            bitmapArray[i].recycle();
-            bitmapArray[i] = null;
-        }
-	}
-
 	@Override
 	public void draw(Canvas canvas) {
 		if (VERBOSE) FLog.v("Current frame: %d", currentFrame);
@@ -253,6 +215,19 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	@Override
 	public int getOpacity() {
 		return PixelFormat.TRANSLUCENT;
+	}
+
+	/**
+	 * Cleanup bitmap cached used for playing an animation
+	 */
+	public void recycleBitmaps() {
+		if (bitmapArray == null) return;
+
+		for (int i = 1; i < bitmapArray.length; i++) {
+			if (bitmapArray[i] == null) continue;
+			bitmapArray[i].recycle();
+			bitmapArray[i] = null;
+		}
 	}
 	
 	private void readApngInformation(File baseFile) {
@@ -431,6 +406,46 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
         }
         return bitmap;
     }
+
+	private void prepare() {
+		String imagePath = getImagePathFromUri();
+		if (imagePath == null) return;
+
+		baseFile = new File(imagePath);
+
+		if (DEBUG) FLog.d("Extracting PNGs..");
+		ApngExtractFrames.process(baseFile);
+		if (DEBUG) FLog.d("Extracting complete");
+
+		if (DEBUG) FLog.d("Read APNG information..");
+		readApngInformation(baseFile);
+
+		isPrepared = true;
+	}
+
+	private String getImagePathFromUri() {
+		if (sourceUri == null) return null;
+
+		String imagePath = null;
+
+		try {
+			String filename = sourceUri.getLastPathSegment();
+
+			File file = new File(workingPath, filename);
+
+			if (!file.exists()) {
+				if (VERBOSE) FLog.v("Copy file from %s to %s", sourceUri.getPath(), file.getPath());
+				FileUtils.copyFile(new File(sourceUri.getPath()), file);
+			}
+
+			imagePath = file.getPath();
+
+		} catch (Exception e) {
+			FLog.e("Error: %s", e.toString());
+		}
+
+		return imagePath;
+	}
 
     /**
      * Process Blending operation, and handle a final draw for this frame
