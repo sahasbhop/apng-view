@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "com.github.sahasbhop.apngview.sample"
-        minSdkVersion 7
+        minSdkVersion 8
         targetSdkVersion 22
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
     }
     buildTypes {
         release {

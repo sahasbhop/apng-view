@@ -10,10 +10,10 @@ android {
     buildToolsVersion '22.0.1'
 
     defaultConfig {
-        minSdkVersion 7
+        minSdkVersion 8 // from Context.getExternalCacheDir()
         targetSdkVersion 22
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
     }
     buildTypes {
         release {
