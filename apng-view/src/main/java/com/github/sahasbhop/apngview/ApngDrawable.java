@@ -18,7 +18,6 @@ import com.github.sahasbhop.apngview.assist.ApngExtractFrames;
 import com.github.sahasbhop.apngview.assist.AssistUtil;
 import com.github.sahasbhop.flog.FLog;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.apache.commons.io.FileUtils;
 
@@ -36,22 +35,22 @@ import ar.com.hjg.pngj.chunks.PngChunkFCTL;
  */
 public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	
-	private static final boolean VERBOSE = false;
+	private static final boolean VERBOSE = true;
     private static final boolean DEBUG = true;
 	private static final float DELAY_FACTOR = 1000F;
     private final Uri sourceUri;
 
     private ApngCallback apngCallback;
-	private ArrayList<PngChunkFCTL> fctlArrayList;
+	private ArrayList<PngChunkFCTL> fctlArrayList = new ArrayList<>();
 	private Bitmap baseBitmap;
 	private Bitmap[] bitmapArray;
 	private DisplayImageOptions displayImageOptions;
-	private ImageLoader imageLoader;
+	private ApngImageLoader imageLoader;
 	private Paint paint;
 	private String workingPath;
 	
-	private boolean isPrepared;
-	private boolean isRunning;
+	private boolean isPrepared = false;
+	private boolean isRunning = false;
 	
 	private int baseWidth;
 	private int baseHeight;
@@ -83,7 +82,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		workingPath = workingDir.getPath();
         sourceUri = uri;
 
-		imageLoader = ImageLoader.getInstance();
+		imageLoader = ApngImageLoader.getInstance();
 		
 		baseBitmap = bitmap;
 		baseWidth = bitmap.getWidth();
@@ -134,7 +133,12 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 				prepare();
 			}
 
-			run();
+            if (isPrepared) {
+                if (VERBOSE) FLog.v("Run");
+                run();
+            } else {
+                stop();
+            }
 		}
 	}
 
@@ -231,8 +235,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	}
 	
 	private void readApngInformation(File baseFile) {
-		fctlArrayList = new ArrayList<>();
-		
 		PngReaderApng reader = new PngReaderApng(baseFile);
 		reader.end();
 		
@@ -412,6 +414,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		if (imagePath == null) return;
 
 		baseFile = new File(imagePath);
+        if (!baseFile.exists()) return;
 
 		if (DEBUG) FLog.d("Extracting PNGs..");
 		ApngExtractFrames.process(baseFile);

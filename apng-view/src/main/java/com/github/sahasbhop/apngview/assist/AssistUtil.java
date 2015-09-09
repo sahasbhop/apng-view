@@ -15,7 +15,7 @@ import ar.com.hjg.pngj.PngReaderApng;
 public class AssistUtil {
 
     private static boolean VERBOSE = true;
-    public static final long MAX_SIZE = 500000L; // ~500K
+    public static final long MAX_SIZE = 5*1000*1000; // ~5MB set this value too low and there might be a problem handling multiple files
 
     private AssistUtil() {
 

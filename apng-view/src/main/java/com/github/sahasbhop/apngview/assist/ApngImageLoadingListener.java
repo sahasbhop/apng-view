@@ -34,7 +34,11 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
     @Override
     public void onLoadingStarted(String imageUri, View view) {
         view.setTag(uri.toString());
-        if (imageLoadingListener != null) imageLoadingListener.onLoadingStarted(imageUri, view);
+        if (shouldForward()) imageLoadingListener.onLoadingStarted(imageUri, view);
+    }
+
+    private boolean shouldForward() {
+        return imageLoadingListener != null && !(imageLoadingListener instanceof ApngImageLoadingListener);
     }
 
     @Override
@@ -70,7 +74,7 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
             }
         }
 
-        if (imageLoadingListener != null) imageLoadingListener.onLoadingComplete(imageUri, view, loadedImage);
+        if (shouldForward()) imageLoadingListener.onLoadingComplete(imageUri, view, loadedImage);
     }
 
     @Override
@@ -80,7 +84,7 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
 
         view.setTag(null);
 
-        if (imageLoadingListener != null) imageLoadingListener.onLoadingCancelled(imageUri, view);
+        if (shouldForward()) imageLoadingListener.onLoadingCancelled(imageUri, view);
     }
 
     @Override
@@ -90,6 +94,6 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
 
         view.setTag(null);
 
-        if (imageLoadingListener != null) imageLoadingListener.onLoadingFailed(imageUri, view, failReason);
+        if (shouldForward()) imageLoadingListener.onLoadingFailed(imageUri, view, failReason);
     }
 }
