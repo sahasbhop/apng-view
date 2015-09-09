@@ -35,7 +35,7 @@ import ar.com.hjg.pngj.chunks.PngChunkFCTL;
  */
 public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	
-	private static final boolean VERBOSE = true;
+	private static final boolean VERBOSE = false;
     private static final boolean DEBUG = true;
 	private static final float DELAY_FACTOR = 1000F;
     private final Uri sourceUri;
