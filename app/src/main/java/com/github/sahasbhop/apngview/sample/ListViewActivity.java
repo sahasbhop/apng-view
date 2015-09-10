@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -47,6 +48,25 @@ public class ListViewActivity extends AppCompatActivity {
 
         ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(new LocalAdapter());
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object tag = view.getTag(R.id.tag_image);
+
+                if (tag == null || !(tag instanceof LocalAdapter.ViewHolder)) return;
+
+                ImageView imageView = ((LocalAdapter.ViewHolder) tag).imageView;
+
+                if (imageView == null
+                        || imageView.getTag(R.id.tag_replay) == null
+                        || !((Boolean) imageView.getTag(R.id.tag_replay))) {
+                    return;
+                }
+
+                ((ApngDrawable) imageView.getDrawable()).start();
+            }
+        });
     }
 
     @Override
@@ -103,6 +123,8 @@ public class ListViewActivity extends AppCompatActivity {
                         return;
                     }
 
+                    view.setTag(R.id.tag_replay, true);
+
                     FLog.d("Play: %s", imageUri);
                     ((ApngDrawable) drawable).setNumPlays(3);
                     ((ApngDrawable) drawable).start();
@@ -113,6 +135,8 @@ public class ListViewActivity extends AppCompatActivity {
                     FLog.d("Failed loading: %s", imageUri);
                 }
             });
+
+            viewHolder.imageView.setTag(R.id.tag_replay, false);
             ApngImageLoader.getInstance().displayImage(url, viewHolder.imageView);
 
             return convertView;
