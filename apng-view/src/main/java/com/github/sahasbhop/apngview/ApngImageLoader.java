@@ -13,6 +13,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.imageaware.ImageAware;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Main class for APNG image loading that inherited from UIL ImageLoader.
  * Same as its parent, the init() method must be called before any other methods.
@@ -24,7 +26,7 @@ public class ApngImageLoader extends ImageLoader {
     private static ApngImageLoader singleton;
 
     private Context context;
-    private ApngImageLoaderCallback callback;
+    private WeakReference<ApngImageLoaderCallback> callback;
 
     public static ApngImageLoader getInstance() {
         if (singleton == null) {
@@ -65,11 +67,11 @@ public class ApngImageLoader extends ImageLoader {
     }
 
     public ApngImageLoaderCallback getCallback() {
-        return callback;
+        return callback == null ? null : callback.get();
     }
 
     public void setCallback(ApngImageLoaderCallback callback) {
-        this.callback = callback;
+        this.callback = new WeakReference<>(callback);
     }
 
     public void setEnableVerboseLog(boolean enableVerboseLog) {
