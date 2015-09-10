@@ -13,7 +13,7 @@ android {
         minSdkVersion 8 // from Context.getExternalCacheDir()
         targetSdkVersion 22
         versionCode 1
-        versionName "1.1"
+        versionName "1.2"
     }
     buildTypes {
         release {
