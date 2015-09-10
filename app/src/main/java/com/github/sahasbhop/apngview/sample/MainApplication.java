@@ -9,6 +9,11 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        ApngImageLoader.getInstance().init(getApplicationContext());
+        ApngImageLoader apngImageLoader = ApngImageLoader.getInstance();
+        apngImageLoader.setEnableDebugLog(false);
+        apngImageLoader.setEnableVerboseLog(false);
+
+        apngImageLoader.init(getApplicationContext());
+
     }
 }

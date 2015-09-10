@@ -12,9 +12,11 @@ import java.util.Arrays;
 
 import ar.com.hjg.pngj.PngReaderApng;
 
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableDebugLog;
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableVerboseLog;
+
 public class AssistUtil {
 
-    private static boolean VERBOSE = true;
     public static final long MAX_SIZE = 5*1000*1000; // ~5MB set this value too low and there might be a problem handling multiple files
 
     private AssistUtil() {
@@ -23,7 +25,7 @@ public class AssistUtil {
 
     public static void checkCahceSize(File cacheDir, long maxSize) {
         long cacheSize = getDirSize(cacheDir);
-        if (VERBOSE) FLog.v("checkCacheSize: %d", cacheSize);
+        if (enableVerboseLog) FLog.v("checkCacheSize: %d", cacheSize);
 
         if (maxSize < 1 && cacheSize >= MAX_SIZE) {
             cleanDir(cacheDir, cacheSize - MAX_SIZE);
@@ -41,7 +43,7 @@ public class AssistUtil {
             bytesDeleted += file.length();
 
             boolean isSuccess = file.delete();
-            if (VERBOSE) FLog.v("Delete(%s): %s", isSuccess ? "success" : "failed", file.getPath());
+            if (enableVerboseLog) FLog.v("Delete(%s): %s", isSuccess ? "success" : "failed", file.getPath());
 
             if (bytesDeleted >= bytes) {
                 break;
@@ -99,7 +101,7 @@ public class AssistUtil {
             isApng = apngNumFrames > 1;
 
         } catch (Exception e) {
-            FLog.w("Error: %s", e.toString());
+            if (enableDebugLog) FLog.w("Error: %s", e.toString());
         }
 
         return isApng;
