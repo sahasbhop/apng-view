@@ -16,6 +16,7 @@ import android.os.SystemClock;
 
 import com.github.sahasbhop.apngview.assist.ApngExtractFrames;
 import com.github.sahasbhop.apngview.assist.AssistUtil;
+import com.github.sahasbhop.apngview.assist.PngImageLoader;
 import com.github.sahasbhop.flog.FLog;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
@@ -30,22 +31,21 @@ import ar.com.hjg.pngj.chunks.PngChunk;
 import ar.com.hjg.pngj.chunks.PngChunkACTL;
 import ar.com.hjg.pngj.chunks.PngChunkFCTL;
 
+import static com.github.sahasbhop.apngview.ApngImageLoader.*;
+
 /**
  * Reference: http://www.vogella.com/code/com.vogella.android.drawables.animation/src/com/vogella/android/drawables/animation/ColorAnimationDrawable.html
  */
 public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	
-	private static final boolean VERBOSE = false;
-    private static final boolean DEBUG = true;
 	private static final float DELAY_FACTOR = 1000F;
     private final Uri sourceUri;
 
-    private ApngCallback apngCallback;
 	private ArrayList<PngChunkFCTL> fctlArrayList = new ArrayList<>();
 	private Bitmap baseBitmap;
 	private Bitmap[] bitmapArray;
 	private DisplayImageOptions displayImageOptions;
-	private ApngImageLoader imageLoader;
+	private PngImageLoader imageLoader;
 	private Paint paint;
 	private String workingPath;
 	
@@ -82,22 +82,14 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		workingPath = workingDir.getPath();
         sourceUri = uri;
 
-		imageLoader = ApngImageLoader.getInstance();
+		imageLoader = PngImageLoader.getInstance();
 		
 		baseBitmap = bitmap;
 		baseWidth = bitmap.getWidth();
 		baseHeight = bitmap.getHeight();
 
-        if (DEBUG) FLog.d("Uri: %s", sourceUri);
-        if (DEBUG) FLog.d("Bitmap size: %dx%d", baseWidth, baseHeight);
-	}
-
-	/**
-	 * Set callback to know when an animation is started or stopped
-	 * @param callback Callback listener
-	 */
-	public void setCallback(ApngCallback callback) {
-		apngCallback = callback;
+        if (enableDebugLog) FLog.d("Uri: %s", sourceUri);
+        if (enableDebugLog) FLog.d("Bitmap size: %dx%d", baseWidth, baseHeight);
 	}
 
 	/**
@@ -129,12 +121,12 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 			currentFrame = 0;
 
 			if (!isPrepared) {
-				if (VERBOSE) FLog.v("Prepare");
+				if (enableVerboseLog) FLog.v("Prepare");
 				prepare();
 			}
 
             if (isPrepared) {
-                if (VERBOSE) FLog.v("Run");
+                if (enableVerboseLog) FLog.v("Run");
                 run();
             } else {
                 stop();
@@ -149,10 +141,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	        
 			unscheduleSelf(this);
 			isRunning = false;
-			
-			if (apngCallback != null) {
-				apngCallback.onStop();
-			}
 	    }
 	}
 
@@ -178,15 +166,11 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
 		scheduleSelf(this, SystemClock.uptimeMillis() + delay);
 		invalidateSelf();
-
-        if (apngCallback != null) {
-            apngCallback.onStart();
-        }
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		if (VERBOSE) FLog.v("Current frame: %d", currentFrame);
+		if (enableVerboseLog) FLog.v("Current frame: %d", currentFrame);
 		
 		if (currentFrame <= 0) {
 			drawBaseBitmap(canvas);
@@ -200,7 +184,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		
 		if (numPlays > 0 && currentFrame == numFrames - 1) {
 			currentLoop++;
-			if (VERBOSE) FLog.v("Loop count: %d/%d", currentLoop, numPlays);
+			if (enableVerboseLog) FLog.v("Loop count: %d/%d", currentLoop, numPlays);
 		}
 		
 		currentFrame++;
@@ -246,13 +230,13 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 			
 			if (chunk instanceof PngChunkACTL) {
 				numFrames = ((PngChunkACTL) chunk).getNumFrames();
-				if (DEBUG) FLog.d("numFrames: %d", numFrames);
+				if (enableDebugLog) FLog.d("numFrames: %d", numFrames);
 				
 				if (numPlays > 0) {
-                    if (DEBUG) FLog.d("numPlays: %d (user defined)", numPlays);
+                    if (enableDebugLog) FLog.d("numPlays: %d (user defined)", numPlays);
 				} else {
                     numPlays = ((PngChunkACTL) chunk).getNumPlays();
-                    if (DEBUG) FLog.d("numPlays: %d (media info)", numPlays);
+                    if (enableDebugLog) FLog.d("numPlays: %d (media info)", numPlays);
 				}
 				
 			} else if (chunk instanceof PngChunkFCTL) {
@@ -268,16 +252,16 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 			int width = canvas.getWidth();
 			int height = canvas.getHeight();
 
-			if (VERBOSE) FLog.v("Canvas: %dx%d", width, height);
+			if (enableVerboseLog) FLog.v("Canvas: %dx%d", width, height);
 
 			float scalingByWidth = ((float) canvas.getWidth())/ baseWidth;
-			if (VERBOSE) FLog.v("scalingByWidth: %.2f", scalingByWidth);
+			if (enableVerboseLog) FLog.v("scalingByWidth: %.2f", scalingByWidth);
 
 			float scalingByHeight = ((float) canvas.getHeight())/ baseHeight;
-			if (VERBOSE) FLog.v("scalingByHeight: %.2f", scalingByHeight);
+			if (enableVerboseLog) FLog.v("scalingByHeight: %.2f", scalingByHeight);
 
 			mScaling = scalingByWidth <= scalingByHeight ? scalingByWidth : scalingByHeight;
-			if (VERBOSE) FLog.v("mScaling: %.2f", mScaling);
+			if (enableVerboseLog) FLog.v("mScaling: %.2f", mScaling);
 		}
 
 		RectF dst = new RectF(0, 0, mScaling * baseWidth, mScaling * baseHeight);
@@ -306,7 +290,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	}
 
 	private Bitmap createAnimateBitmap(int frameIndex) {
-		if (VERBOSE) FLog.v("ENTER");
+		if (enableVerboseLog) FLog.v("ENTER");
         Bitmap bitmap = null;
 
 		PngChunkFCTL previousChunk = frameIndex > 0 ? fctlArrayList.get(frameIndex - 1) : null;
@@ -328,7 +312,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		
 		redrawnBitmap = handleBlendingOperation(offsetX, offsetY, blendOp, frameBitmap, bitmap);
 		
-		if (VERBOSE) FLog.v("EXIT");
+		if (enableVerboseLog) FLog.v("EXIT");
 		return redrawnBitmap;
 	}
 
@@ -358,7 +342,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
             tempPath = new File(workingPath, ApngExtractFrames.getFileName(baseFile, frameIndex - 1)).getPath();
             frameBitmap = imageLoader.loadImageSync(Uri.fromFile(new File(tempPath)).toString(), displayImageOptions);
 
-            if (VERBOSE) FLog.v("Create a new bitmap");
+            if (enableVerboseLog) FLog.v("Create a new bitmap");
             tempBitmap = Bitmap.createBitmap(baseWidth, baseHeight, Bitmap.Config.ARGB_8888);
             tempCanvas = new Canvas(tempBitmap);
             tempCanvas.drawBitmap(bitmap, 0, 0, null);
@@ -389,7 +373,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
                             bitmap = bitmapArray[i];
 
                         } else if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_BACKGROUND) {
-                            if (VERBOSE) FLog.v("Create a new bitmap");
+                            if (enableVerboseLog) FLog.v("Create a new bitmap");
                             tempBitmap = Bitmap.createBitmap(baseWidth, baseHeight, Bitmap.Config.ARGB_8888);
                             tempCanvas = new Canvas(tempBitmap);
                             tempCanvas.drawBitmap(bitmapArray[i], 0, 0, null);
@@ -416,11 +400,11 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		baseFile = new File(imagePath);
         if (!baseFile.exists()) return;
 
-		if (DEBUG) FLog.d("Extracting PNGs..");
+		if (enableDebugLog) FLog.d("Extracting PNGs..");
 		ApngExtractFrames.process(baseFile);
-		if (DEBUG) FLog.d("Extracting complete");
+		if (enableDebugLog) FLog.d("Extracting complete");
 
-		if (DEBUG) FLog.d("Read APNG information..");
+		if (enableDebugLog) FLog.d("Read APNG information..");
 		readApngInformation(baseFile);
 
 		isPrepared = true;
@@ -437,7 +421,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 			File file = new File(workingPath, filename);
 
 			if (!file.exists()) {
-				if (VERBOSE) FLog.v("Copy file from %s to %s", sourceUri.getPath(), file.getPath());
+				if (enableVerboseLog) FLog.v("Copy file from %s to %s", sourceUri.getPath(), file.getPath());
 				FileUtils.copyFile(new File(sourceUri.getPath()), file);
 			}
 
@@ -457,7 +441,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
             int offsetX, int offsetY, byte blendOp,
             Bitmap frameBitmap, Bitmap baseBitmap) {
 
-        if (VERBOSE) FLog.v("Create a new bitmap");
+        if (enableVerboseLog) FLog.v("Create a new bitmap");
 		Bitmap redrawnBitmap = Bitmap.createBitmap(baseWidth, baseHeight, Bitmap.Config.ARGB_8888);
 
 		Canvas canvas = new Canvas(redrawnBitmap);
@@ -475,11 +459,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		canvas.drawBitmap(frameBitmap, offsetX, offsetY, null);
 		
 		return redrawnBitmap;
-	}
-	
-	public interface ApngCallback {
-		void onStart();
-		void onStop();
 	}
 	
 }

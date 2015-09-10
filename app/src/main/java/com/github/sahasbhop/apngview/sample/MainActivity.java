@@ -1,52 +1,35 @@
 package com.github.sahasbhop.apngview.sample;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Pair;
+import android.view.View;
 
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity {
-
-    private ArrayList<Pair<String, String>> urls;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        urls = new ArrayList<>();
-
-        urls.add(new Pair<>("Asset 1", "assets://apng/apng_geneva_drive.png"));
-        urls.add(new Pair<>("Asset 2", "assets://apng/00BA08BA557D66FE8B69397B27E6D3EE.png"));
-        urls.add(new Pair<>("Asset 3", "assets://apng/55F7AAB0AB28AA3F89E5B27F4ED08ECF.png"));
-        urls.add(new Pair<>("Asset 4", "assets://apng/A9041AB7916E493C6381F96B5EE29C3D.png"));
-        urls.add(new Pair<>("Asset 5", "assets://apng/B74DEA83B6791665C515ECC972826826.png"));
-        urls.add(new Pair<>("Asset 6", "assets://apng/avatar_talk_1.png"));
-        urls.add(new Pair<>("Internet Source", "http://littlesvr.ca/apng/images/clock.png"));
-
-        ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-        viewPager.setAdapter(new LocalViewPager(getSupportFragmentManager()));
+        findViewById(R.id.button_view_pager).setOnClickListener(this);
+        findViewById(R.id.button_list_view).setOnClickListener(this);
     }
 
-    class LocalViewPager extends FragmentPagerAdapter {
-        public LocalViewPager(FragmentManager fm) {
-            super(fm);
+    @Override
+    public void onClick(View v) {
+        Intent intent = null;
+        switch (v.getId()) {
+            case R.id.button_view_pager:
+                intent = new Intent(this, ViewPagerActivity.class);
+                break;
+            case R.id.button_list_view:
+                intent = new Intent(this, ListViewActivity.class);
+                break;
         }
 
-        @Override
-        public Fragment getItem(int position) {
-            Pair<String, String> pair = urls.get(position);
-            return ImageFragment.newInstance(pair.first, pair.second);
-        }
-
-        @Override
-        public int getCount() {
-            return urls.size();
+        if (intent != null) {
+            startActivity(intent);
         }
     }
 }

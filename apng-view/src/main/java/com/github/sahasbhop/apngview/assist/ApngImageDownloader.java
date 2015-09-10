@@ -23,6 +23,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableDebugLog;
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableVerboseLog;
+
 /**
  * Responsible for making a copy of any PNG files being loaded by the library.
  * When image loading process is finished,
@@ -58,7 +61,7 @@ public class ApngImageDownloader extends BaseImageDownloader {
 		try {
 			result = future.get();
 		} catch (Exception e) {
-			FLog.w("Error: %s", e.toString());
+			if (enableDebugLog) FLog.w("Error: %s", e.toString());
 		}
 		
 		return result;
@@ -80,7 +83,7 @@ public class ApngImageDownloader extends BaseImageDownloader {
 		try {
 			result = future.get();
 		} catch (Exception e) {
-			FLog.w("Error: %s", e.toString());
+			if (enableDebugLog) FLog.w("Error: %s", e.toString());
 		}
 		
 		return result;
@@ -102,7 +105,7 @@ public class ApngImageDownloader extends BaseImageDownloader {
 		try {
 			result = future.get();
 		} catch (Exception e) {
-			FLog.w("Error: %s", e.toString());
+			if (enableDebugLog) FLog.w("Error: %s", e.toString());
 		}
 		
 		return result;
@@ -131,10 +134,10 @@ public class ApngImageDownloader extends BaseImageDownloader {
 		File targetFile = AssistUtil.getCopiedFile(mContext, imageUri);
 
 		if (targetFile == null) {
-			FLog.w("Can't copy a file!!! %s", imageUri);
+			if (enableDebugLog) FLog.w("Can't copy a file!!! %s", imageUri);
 
 		} else if (!targetFile.exists()) {
-			FLog.d("Copy\nfrom: %s\nto: %s", imageUri, targetFile.getPath());
+			if (enableVerboseLog) FLog.v("Copy\nfrom: %s\nto: %s", imageUri, targetFile.getPath());
 
 			try {
 				try {
@@ -145,13 +148,13 @@ public class ApngImageDownloader extends BaseImageDownloader {
 					FileUtils.copyInputStreamToFile(imageStream, targetFile);
 				}
 
-				FLog.d("Copy finished");
+				if (enableVerboseLog) FLog.v("Copy finished");
 
 				FileInputStream input = new FileInputStream(targetFile);
 				imageStream = new ContentLengthInputStream(new BufferedInputStream(input, BUFFER_SIZE), input.available());
 
 			} catch (Exception e) {
-				FLog.w("Error: %s", e.toString());
+				if (enableDebugLog) FLog.w("Error: %s", e.toString());
 			}
 		}
 

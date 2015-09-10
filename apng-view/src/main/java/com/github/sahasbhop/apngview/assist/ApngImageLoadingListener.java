@@ -8,6 +8,8 @@ import android.widget.ImageView;
 
 import com.github.sahasbhop.apngview.ApngDrawable;
 import com.github.sahasbhop.apngview.ApngImageLoader;
+import com.github.sahasbhop.apngview.ApngImageLoaderCallback;
+import com.github.sahasbhop.apngview.R;
 import com.github.sahasbhop.flog.FLog;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
@@ -16,35 +18,31 @@ import com.nostra13.universalimageloader.utils.MemoryCacheUtils;
 
 import java.io.File;
 
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableDebugLog;
+
 public class ApngImageLoadingListener implements ImageLoadingListener {
+    private ApngImageLoaderCallback callback;
     private Context context;
-    private ImageLoadingListener imageLoadingListener;
     private Uri uri;
 
-    public ApngImageLoadingListener(Context context, Uri uri) {
-        this(context, uri, null);
-    }
-
-    public ApngImageLoadingListener(Context context, Uri uri, ImageLoadingListener imageLoadingListener) {
+    public ApngImageLoadingListener(Context context, Uri uri, ApngImageLoaderCallback callback) {
         this.context = context;
         this.uri = uri;
-        this.imageLoadingListener = imageLoadingListener;
+        this.callback = callback;
     }
 
     @Override
     public void onLoadingStarted(String imageUri, View view) {
-        view.setTag(uri.toString());
-        if (shouldForward()) imageLoadingListener.onLoadingStarted(imageUri, view);
-    }
-
-    private boolean shouldForward() {
-        return imageLoadingListener != null && !(imageLoadingListener instanceof ApngImageLoadingListener);
+        if (view == null) return;
+        view.setTag(R.id.tag_image, uri.toString());
     }
 
     @Override
     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-        Object tag = view.getTag();
-        FLog.d("tag: %s", tag);
+        if (view == null) return;
+
+        Object tag = view.getTag(R.id.tag_image);
+        if (enableDebugLog) FLog.d("tag: %s", tag);
 
         if (tag != null && tag instanceof String) {
             String actualUri = tag.toString();
@@ -52,13 +50,13 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
             File pngFile = AssistUtil.getCopiedFile(context, actualUri);
 
             if (pngFile == null) {
-                FLog.w("Can't locate the file!!! %s", actualUri);
+                if (enableDebugLog) FLog.w("Can't locate the file!!! %s", actualUri);
 
             } else if (pngFile.exists()) {
                 boolean isApng = AssistUtil.isApng(pngFile);
 
                 if (isApng) {
-                    FLog.d("Setup apng drawable");
+                    if (enableDebugLog) FLog.d("Setup apng drawable");
                     ApngDrawable drawable = new ApngDrawable(context, loadedImage, Uri.fromFile(pngFile));
                     ((ImageView) view).setImageDrawable(drawable);
                 } else {
@@ -66,7 +64,7 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
                 }
 
             } else {
-                FLog.d("Clear cache and reload");
+                if (enableDebugLog) FLog.d("Clear cache and reload");
                 MemoryCacheUtils.removeFromCache(actualUri, ApngImageLoader.getInstance().getMemoryCache());
                 DiskCacheUtils.removeFromCache(actualUri, ApngImageLoader.getInstance().getDiskCache());
 
@@ -74,26 +72,34 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
             }
         }
 
-        if (shouldForward()) imageLoadingListener.onLoadingComplete(imageUri, view, loadedImage);
+        if (shouldForward()) callback.onLoadComplete(imageUri, view);
     }
 
     @Override
     public void onLoadingCancelled(String imageUri, View view) {
-        Object tag = view.getTag();
-        FLog.d("tag: %s", tag);
+        if (view == null) return;
 
-        view.setTag(null);
+        Object tag = view.getTag(R.id.tag_image);
+        if (enableDebugLog) FLog.d("tag: %s", tag);
 
-        if (shouldForward()) imageLoadingListener.onLoadingCancelled(imageUri, view);
+        view.setTag(R.id.tag_image, null);
+
+        if (shouldForward()) callback.onLoadFailed(imageUri, view);
     }
 
     @Override
     public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-        Object tag = view.getTag();
-        FLog.d("tag: %s", tag);
+        if (view == null) return;
 
-        view.setTag(null);
+        Object tag = view.getTag(R.id.tag_image);
+        if (enableDebugLog) FLog.d("tag: %s", tag);
 
-        if (shouldForward()) imageLoadingListener.onLoadingFailed(imageUri, view, failReason);
+        view.setTag(R.id.tag_image, null);
+
+        if (shouldForward()) callback.onLoadFailed(imageUri, view);
+    }
+
+    private boolean shouldForward() {
+        return callback != null;
     }
 }
