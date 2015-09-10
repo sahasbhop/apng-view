@@ -36,12 +36,14 @@ public class ListViewActivity extends AppCompatActivity {
         }
 
         urls = new ArrayList<>();
-        urls.add("assets://apng/apng_geneva_drive.png");
         urls.add("assets://apng/00BA08BA557D66FE8B69397B27E6D3EE.png");
         urls.add("assets://apng/55F7AAB0AB28AA3F89E5B27F4ED08ECF.png");
         urls.add("assets://apng/A9041AB7916E493C6381F96B5EE29C3D.png");
         urls.add("assets://apng/B74DEA83B6791665C515ECC972826826.png");
-        urls.add("assets://apng/avatar_talk_1.png");
+        urls.add("assets://apng/00BA08BA557D66FE8B69397B27E6D3EE.png");
+        urls.add("assets://apng/55F7AAB0AB28AA3F89E5B27F4ED08ECF.png");
+        urls.add("assets://apng/A9041AB7916E493C6381F96B5EE29C3D.png");
+        urls.add("assets://apng/B74DEA83B6791665C515ECC972826826.png");
 
         ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(new LocalAdapter());
