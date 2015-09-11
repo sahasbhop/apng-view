@@ -8,7 +8,6 @@ import android.widget.ImageView;
 
 import com.github.sahasbhop.apngview.ApngDrawable;
 import com.github.sahasbhop.apngview.ApngImageLoader;
-import com.github.sahasbhop.apngview.ApngImageLoaderCallback;
 import com.github.sahasbhop.apngview.R;
 import com.github.sahasbhop.flog.FLog;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -72,7 +71,7 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
             }
         }
 
-        if (shouldForward()) callback.onLoadComplete(imageUri, view);
+        if (shouldForward()) callback.onLoadFinish(true, imageUri, view);
     }
 
     @Override
@@ -84,7 +83,7 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
 
         view.setTag(R.id.tag_image, null);
 
-        if (shouldForward()) callback.onLoadFailed(imageUri, view);
+        if (shouldForward()) callback.onLoadFinish(false, imageUri, view);
     }
 
     @Override
@@ -96,7 +95,7 @@ public class ApngImageLoadingListener implements ImageLoadingListener {
 
         view.setTag(R.id.tag_image, null);
 
-        if (shouldForward()) callback.onLoadFailed(imageUri, view);
+        if (shouldForward()) callback.onLoadFinish(false, imageUri, view);
     }
 
     private boolean shouldForward() {

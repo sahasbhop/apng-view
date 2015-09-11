@@ -2,18 +2,17 @@ package com.github.sahasbhop.apngview;
 
 import android.content.Context;
 import android.net.Uri;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.github.sahasbhop.apngview.assist.ApngImageDownloader;
+import com.github.sahasbhop.apngview.assist.ApngImageLoaderCallback;
 import com.github.sahasbhop.apngview.assist.ApngImageLoadingListener;
 import com.github.sahasbhop.apngview.assist.PngImageLoader;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.imageaware.ImageAware;
-
-import java.lang.ref.WeakReference;
 
 /**
  * Main class for APNG image loading that inherited from UIL ImageLoader.
@@ -26,7 +25,6 @@ public class ApngImageLoader extends ImageLoader {
     private static ApngImageLoader singleton;
 
     private Context context;
-    private WeakReference<ApngImageLoaderCallback> callback;
 
     public static ApngImageLoader getInstance() {
         if (singleton == null) {
@@ -66,14 +64,6 @@ public class ApngImageLoader extends ImageLoader {
         super.init(apngComponentImageLoaderConfiguration);
     }
 
-    public ApngImageLoaderCallback getCallback() {
-        return callback == null ? null : callback.get();
-    }
-
-    public void setCallback(ApngImageLoaderCallback callback) {
-        this.callback = new WeakReference<>(callback);
-    }
-
     public void setEnableVerboseLog(boolean enableVerboseLog) {
         ApngImageLoader.enableVerboseLog = enableVerboseLog;
     }
@@ -83,23 +73,34 @@ public class ApngImageLoader extends ImageLoader {
     }
 
     @Override
-    public void displayImage(String uri, ImageAware imageAware) {
-        super.displayImage(uri, imageAware, new ApngImageLoadingListener(context, Uri.parse(uri), getCallback()));
-    }
-
-    @Override
-    public void displayImage(String uri, ImageAware imageAware, DisplayImageOptions options) {
-        super.displayImage(uri, imageAware, options, new ApngImageLoadingListener(context, Uri.parse(uri), getCallback()));
-    }
-
-    @Override
     public void displayImage(String uri, ImageView imageView) {
-        super.displayImage(uri, imageView, new ApngImageLoadingListener(context, Uri.parse(uri), getCallback()));
+        displayApng(uri, imageView, null);
     }
 
     @Override
     public void displayImage(String uri, ImageView imageView, DisplayImageOptions options) {
-        super.displayImage(uri, imageView, options, new ApngImageLoadingListener(context, Uri.parse(uri), getCallback()));
+        displayApng(uri, imageView, options, null);
+    }
+
+    /**
+     * Load and display APNG in specific ImageView object with ApngConfig
+     * @param uri Source URI
+     * @param imageView Target view
+     * @param config APNG configuration
+     */
+    public void displayApng(String uri, ImageView imageView, ApngConfig config) {
+        super.displayImage(uri, imageView, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config)));
+    }
+
+    /**
+     * Load and display APNG in specific ImageView object with DisplayImageOptions and ApngConfig
+     * @param uri Source URI
+     * @param imageView Target view
+     * @param options UIL DisplayImageOptions
+     * @param config APNG configuration
+     */
+    public void displayApng(String uri, ImageView imageView, DisplayImageOptions options, ApngConfig config) {
+        super.displayImage(uri, imageView, options, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config)));
     }
 
     private ImageLoaderConfiguration getDefaultApngComponentImageLoaderConfiguration(Context context) {
@@ -126,5 +127,37 @@ public class ApngImageLoader extends ImageLoader {
                 .diskCacheSize(50 * 1024 * 1024)
                 .diskCacheFileCount(100)
                 .build();
+    }
+
+    private ApngImageLoaderCallback getAutoPlayHandler(final ApngConfig config) {
+        if (config == null || !config.autoPlay) {
+            return null;
+        } else {
+            return new ApngImageLoaderCallback() {
+                @Override
+                public void onLoadFinish(boolean success, String imageUri, View view) {
+                    if (!success) return;
+                    ApngDrawable apngDrawable = ApngDrawable.getFromView(view);
+                    if (apngDrawable == null) return;
+                    if (config.numPlays > 0) apngDrawable.setNumPlays(config.numPlays);
+                    apngDrawable.start();
+                }
+            };
+        }
+    }
+
+    public static class ApngConfig {
+        public int numPlays = 0;
+        public boolean autoPlay = false;
+
+        /**
+         * Configuration for controlling APNG behavior
+         * @param numPlays Overrides the number of repetition
+         * @param autoPlay Start the animation immediately after finish loading an image
+         */
+        public ApngConfig(int numPlays, boolean autoPlay) {
+            this.numPlays = numPlays;
+            this.autoPlay = autoPlay;
+        }
     }
 }
