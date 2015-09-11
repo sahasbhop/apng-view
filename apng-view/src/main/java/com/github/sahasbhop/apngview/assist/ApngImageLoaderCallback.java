@@ -1,4 +1,4 @@
-package com.github.sahasbhop.apngview;
+package com.github.sahasbhop.apngview.assist;
 
 import android.view.View;
 
@@ -7,6 +7,5 @@ import android.view.View;
  * The caller may consider playing an animation immediately or knowing that it is ready for playing
  */
 public interface ApngImageLoaderCallback {
-    void onLoadComplete(String imageUri, View view);
-    void onLoadFailed(String imageUri, View view);
+    void onLoadFinish(boolean success, String imageUri, View view);
 }

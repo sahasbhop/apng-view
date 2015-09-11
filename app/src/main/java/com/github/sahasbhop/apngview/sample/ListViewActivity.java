@@ -1,6 +1,5 @@
 package com.github.sahasbhop.apngview.sample;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -15,8 +14,6 @@ import android.widget.TextView;
 
 import com.github.sahasbhop.apngview.ApngDrawable;
 import com.github.sahasbhop.apngview.ApngImageLoader;
-import com.github.sahasbhop.apngview.ApngImageLoaderCallback;
-import com.github.sahasbhop.flog.FLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,13 +55,12 @@ public class ListViewActivity extends AppCompatActivity {
 
                 ImageView imageView = ((LocalAdapter.ViewHolder) tag).imageView;
 
-                if (imageView == null
-                        || imageView.getTag(R.id.tag_replay) == null
-                        || !((Boolean) imageView.getTag(R.id.tag_replay))) {
-                    return;
-                }
+                ApngDrawable apngDrawable = ApngDrawable.getFromView(imageView);
 
-                ((ApngDrawable) imageView.getDrawable()).start();
+                if (apngDrawable != null) {
+                    apngDrawable.setNumPlays(3);
+                    apngDrawable.start();
+                }
             }
         });
     }
@@ -111,33 +107,7 @@ public class ListViewActivity extends AppCompatActivity {
 
             ViewHolder viewHolder = (ViewHolder) convertView.getTag(R.id.tag_image);
             viewHolder.textView.setText(String.valueOf(position + 1));
-
-            ApngImageLoader.getInstance().setCallback(new ApngImageLoaderCallback() {
-                @Override
-                public void onLoadComplete(String imageUri, View view) {
-                    if (view == null || !(view instanceof ImageView)) return;
-
-                    Drawable drawable = ((ImageView) view).getDrawable();
-
-                    if (!(drawable instanceof ApngDrawable)) {
-                        return;
-                    }
-
-                    view.setTag(R.id.tag_replay, true);
-
-                    FLog.d("Play: %s", imageUri);
-                    ((ApngDrawable) drawable).setNumPlays(3);
-                    ((ApngDrawable) drawable).start();
-                }
-
-                @Override
-                public void onLoadFailed(String imageUri, View view) {
-                    FLog.d("Failed loading: %s", imageUri);
-                }
-            });
-
-            viewHolder.imageView.setTag(R.id.tag_replay, false);
-            ApngImageLoader.getInstance().displayImage(url, viewHolder.imageView);
+            ApngImageLoader.getInstance().displayApng(url, viewHolder.imageView, new ApngImageLoader.ApngConfig(3, true));
 
             return convertView;
         }

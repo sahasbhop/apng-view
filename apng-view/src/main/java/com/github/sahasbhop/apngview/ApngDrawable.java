@@ -13,6 +13,8 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.github.sahasbhop.apngview.assist.ApngExtractFrames;
 import com.github.sahasbhop.apngview.assist.AssistUtil;
@@ -31,7 +33,8 @@ import ar.com.hjg.pngj.chunks.PngChunk;
 import ar.com.hjg.pngj.chunks.PngChunkACTL;
 import ar.com.hjg.pngj.chunks.PngChunkFCTL;
 
-import static com.github.sahasbhop.apngview.ApngImageLoader.*;
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableDebugLog;
+import static com.github.sahasbhop.apngview.ApngImageLoader.enableVerboseLog;
 
 /**
  * Reference: http://www.vogella.com/code/com.vogella.android.drawables.animation/src/com/vogella/android/drawables/animation/ColorAnimationDrawable.html
@@ -90,6 +93,13 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
         if (enableDebugLog) FLog.d("Uri: %s", sourceUri);
         if (enableDebugLog) FLog.d("Bitmap size: %dx%d", baseWidth, baseHeight);
+	}
+
+	public static ApngDrawable getFromView(View view) {
+		if (view == null || !(view instanceof ImageView)) return null;
+		Drawable drawable = ((ImageView) view).getDrawable();
+		if (drawable == null || !(drawable instanceof ApngDrawable)) return null;
+		return (ApngDrawable) drawable;
 	}
 
 	/**
