@@ -1,6 +1,5 @@
 package com.github.sahasbhop.apngview.sample;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -46,17 +45,16 @@ public class ImageFragment extends Fragment {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Drawable drawable = ((ImageView) v).getDrawable();
+                ApngDrawable apngDrawable = ApngDrawable.getFromView(v);
+                if (apngDrawable == null) return;
 
-                if (drawable instanceof ApngDrawable) {
-                    if (((ApngDrawable) drawable).isRunning()) {
-                        FLog.v("Stop animation");
-                        ((ApngDrawable) drawable).stop();
-                    } else {
-                        FLog.v("Start animation");
-                        ((ApngDrawable) drawable).setNumPlays(3);
-                        ((ApngDrawable) drawable).start();
-                    }
+                if (apngDrawable.isRunning()) {
+                    FLog.v("Stop animation");
+                    apngDrawable.stop();
+                } else {
+                    FLog.v("Start animation");
+                    apngDrawable.setNumPlays(3);
+                    apngDrawable.start();
                 }
             }
         });
