@@ -151,10 +151,23 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	        
 			unscheduleSelf(this);
 			isRunning = false;
-	    }
+
+            // Recycle bitmap cache here to control the peak of memory allocation
+            // Leave it unclear may cause out-of-memory exception
+            cleanupCache();
+        }
 	}
 
-	@Override
+    private void cleanupCache() {
+        if (bitmapArray == null || bitmapArray.length < 2) return;
+
+        for (int i = 1; i < bitmapArray.length; i++) {
+            bitmapArray[i].recycle();
+            bitmapArray[i] = null;
+        }
+    }
+
+    @Override
 	public boolean isRunning() {
 		return isRunning;
 	}
