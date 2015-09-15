@@ -122,8 +122,8 @@ public class ApngImageLoader extends ImageLoader {
 
     private ImageLoaderConfiguration getDefaultCommonImageLoaderConfiguration() {
         return new ImageLoaderConfiguration.Builder(this.context)
-                .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
-                .memoryCacheSize(2 * 1024 * 1024)
+                .memoryCache(new LruMemoryCache(8 * 1024 * 1024))
+                .memoryCacheSize(8 * 1024 * 1024)
                 .diskCacheSize(50 * 1024 * 1024)
                 .diskCacheFileCount(100)
                 .build();

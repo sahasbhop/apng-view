@@ -20,6 +20,7 @@ import com.github.sahasbhop.apngview.assist.ApngExtractFrames;
 import com.github.sahasbhop.apngview.assist.AssistUtil;
 import com.github.sahasbhop.apngview.assist.PngImageLoader;
 import com.github.sahasbhop.flog.FLog;
+import com.nostra13.universalimageloader.cache.memory.MemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 
 import org.apache.commons.io.FileUtils;
@@ -46,7 +47,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
 	private ArrayList<PngChunkFCTL> fctlArrayList = new ArrayList<>();
 	private Bitmap baseBitmap;
-	private Bitmap[] bitmapArray;
 	private DisplayImageOptions displayImageOptions;
 	private PngImageLoader imageLoader;
 	private Paint paint;
@@ -151,10 +151,10 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	        
 			unscheduleSelf(this);
 			isRunning = false;
-	    }
+        }
 	}
 
-	@Override
+    @Override
 	public boolean isRunning() {
 		return isRunning;
 	}
@@ -215,19 +215,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		return PixelFormat.TRANSLUCENT;
 	}
 
-	/**
-	 * Cleanup bitmap cached used for playing an animation
-	 */
-	public void recycleBitmaps() {
-		if (bitmapArray == null) return;
-
-		for (int i = 1; i < bitmapArray.length; i++) {
-			if (bitmapArray[i] == null) continue;
-			bitmapArray[i].recycle();
-			bitmapArray[i] = null;
-		}
-	}
-	
 	private void readApngInformation(File baseFile) {
 		PngReaderApng reader = new PngReaderApng(baseFile);
 		reader.end();
@@ -253,8 +240,6 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 				fctlArrayList.add((PngChunkFCTL) chunk);
 			}
 		}
-		
-		bitmapArray = new Bitmap[fctlArrayList.size()];
 	}
 
 	private void drawBaseBitmap(Canvas canvas) {
@@ -276,27 +261,25 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
 		RectF dst = new RectF(0, 0, mScaling * baseWidth, mScaling * baseHeight);
 		canvas.drawBitmap(baseBitmap, null, dst, paint);
-		
-		if (bitmapArray != null) {
-			bitmapArray[0] = baseBitmap;
-		}
+
+        cacheBitmap(0, baseBitmap);
 	}
 	
 	private void drawAnimateBitmap(Canvas canvas, int frameIndex) {
-		if (bitmapArray != null && bitmapArray.length > frameIndex) {
-			if (bitmapArray[frameIndex] == null) {
-				bitmapArray[frameIndex] = createAnimateBitmap(frameIndex);
+        Bitmap bitmap = getCacheBitmap(frameIndex);
+			if (bitmap == null) {
+                bitmap = createAnimateBitmap(frameIndex);
+                cacheBitmap(frameIndex, bitmap);
 			}
 
-			if (bitmapArray[frameIndex] == null) return;
+			if (bitmap == null) return;
 
 			RectF dst = new RectF(
 					0, 0,
-					mScaling * bitmapArray[frameIndex].getWidth(),
-					mScaling * bitmapArray[frameIndex].getHeight());
+					mScaling * bitmap.getWidth(),
+					mScaling * bitmap.getHeight());
 
-			canvas.drawBitmap(bitmapArray[frameIndex], null, dst, paint);
-		}
+			canvas.drawBitmap(bitmap, null, dst, paint);
 	}
 
 	private Bitmap createAnimateBitmap(int frameIndex) {
@@ -341,12 +324,12 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
         switch (disposeOp) {
         case PngChunkFCTL.APNG_DISPOSE_OP_NONE:
             // Get bitmap from the previous frame
-            bitmap = frameIndex > 0 ? bitmapArray[frameIndex - 1] : null;
+            bitmap = frameIndex > 0 ? getCacheBitmap(frameIndex - 1) : null;
             break;
 
         case PngChunkFCTL.APNG_DISPOSE_OP_BACKGROUND:
             // Get bitmap from the previous frame but the drawing region is needed to be cleared
-            bitmap = frameIndex > 0 ? bitmapArray[frameIndex - 1] : null;
+            bitmap = frameIndex > 0 ? getCacheBitmap(frameIndex - 1) : null;
             if (bitmap == null) break;
 
             tempPath = new File(workingPath, ApngExtractFrames.getFileName(baseFile, frameIndex - 1)).getPath();
@@ -380,13 +363,13 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
                     if (tempDisposeOp != PngChunkFCTL.APNG_DISPOSE_OP_PREVIOUS) {
 
                         if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_NONE) {
-                            bitmap = bitmapArray[i];
+                            bitmap = getCacheBitmap(i);
 
                         } else if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_BACKGROUND) {
                             if (enableVerboseLog) FLog.v("Create a new bitmap");
                             tempBitmap = Bitmap.createBitmap(baseWidth, baseHeight, Bitmap.Config.ARGB_8888);
                             tempCanvas = new Canvas(tempBitmap);
-                            tempCanvas.drawBitmap(bitmapArray[i], 0, 0, null);
+                            tempCanvas.drawBitmap(getCacheBitmap(i), 0, 0, null);
 
                             tempCanvas.clipRect(tempOffsetX, tempOffsetY, tempOffsetX + frameBitmap.getWidth(), tempOffsetY + frameBitmap.getHeight());
                             tempCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
@@ -470,5 +453,22 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		
 		return redrawnBitmap;
 	}
+
+    private String getCacheKey(int frameIndex) {
+        return String.format("%s-%s", sourceUri.toString(), frameIndex);
+    }
+
+    private void cacheBitmap(int frameIndex, Bitmap bitmap) {
+        if (bitmap == null) return;
+        MemoryCache memoryCache = imageLoader == null ? null : imageLoader.getMemoryCache();
+        if (memoryCache == null) return;
+        memoryCache.put(getCacheKey(frameIndex), bitmap);
+    }
+
+    private Bitmap getCacheBitmap(int frameIndex) {
+        MemoryCache memoryCache = imageLoader == null ? null : imageLoader.getMemoryCache();
+        if (memoryCache == null) return null;
+        return memoryCache.get(getCacheKey(frameIndex));
+    }
 	
 }
