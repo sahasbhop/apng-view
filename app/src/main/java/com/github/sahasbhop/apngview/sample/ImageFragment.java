@@ -63,12 +63,4 @@ public class ImageFragment extends Fragment {
 
         return view;
     }
-
-    @Override
-    public void onDestroy() {
-        if (imageView != null && imageView.getDrawable() instanceof ApngDrawable) {
-            ((ApngDrawable) imageView.getDrawable()).recycleBitmaps();
-        }
-        super.onDestroy();
-    }
 }
