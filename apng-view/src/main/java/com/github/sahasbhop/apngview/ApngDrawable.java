@@ -162,7 +162,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
         if (bitmapArray == null || bitmapArray.length < 2) return;
 
         for (int i = 1; i < bitmapArray.length; i++) {
-            bitmapArray[i].recycle();
+            if (bitmapArray[i] != null) bitmapArray[i].recycle();
             bitmapArray[i] = null;
         }
     }
