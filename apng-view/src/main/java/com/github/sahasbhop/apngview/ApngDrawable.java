@@ -364,6 +364,9 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
                         if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_NONE) {
                             bitmap = getCacheBitmap(i);
+							if (bitmap == null) {
+								FLog.w("Can't retrieve previous APNG_DISPOSE_OP_NONE frame: please try to increase memory cache size!");
+							}
 
                         } else if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_BACKGROUND) {
                             if (enableVerboseLog) FLog.v("Create a new bitmap");
