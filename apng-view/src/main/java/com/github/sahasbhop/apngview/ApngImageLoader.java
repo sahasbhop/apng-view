@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import com.github.sahasbhop.apngview.assist.ApngImageDownloader;
 import com.github.sahasbhop.apngview.assist.ApngImageLoaderCallback;
 import com.github.sahasbhop.apngview.assist.ApngImageLoadingListener;
+import com.github.sahasbhop.apngview.assist.ApngListener;
 import com.github.sahasbhop.apngview.assist.PngImageLoader;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -89,7 +90,7 @@ public class ApngImageLoader extends ImageLoader {
      * @param config APNG configuration
      */
     public void displayApng(String uri, ImageView imageView, ApngConfig config) {
-        super.displayImage(uri, imageView, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config)));
+        super.displayImage(uri, imageView, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config, null)));
     }
 
     /**
@@ -100,7 +101,30 @@ public class ApngImageLoader extends ImageLoader {
      * @param config APNG configuration
      */
     public void displayApng(String uri, ImageView imageView, DisplayImageOptions options, ApngConfig config) {
-        super.displayImage(uri, imageView, options, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config)));
+        super.displayImage(uri, imageView, options, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config, null)));
+    }
+
+    /**
+     * Load and display APNG in specific ImageView object with ApngConfig and ApngListener
+     * @param uri Source URI
+     * @param imageView Target view
+     * @param config APNG configuration
+     * @param apngListener APNG listener
+     */
+    public void displayApng(String uri, ImageView imageView, ApngConfig config, ApngListener apngListener) {
+        super.displayImage(uri, imageView, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config, apngListener)));
+    }
+
+    /**
+     * Load and display APNG in specific ImageView object with DisplayImageOptions and ApngConfig and ApngListener
+     * @param uri Source URI
+     * @param imageView Target view
+     * @param options UIL DisplayImageOptions
+     * @param config APNG configuration
+     * @param apngListener APNG listener
+     */
+    public void displayApng(String uri, ImageView imageView, DisplayImageOptions options, ApngConfig config, ApngListener apngListener) {
+        super.displayImage(uri, imageView, options, new ApngImageLoadingListener(context, Uri.parse(uri), getAutoPlayHandler(config, apngListener)));
     }
 
     private ImageLoaderConfiguration getDefaultApngComponentImageLoaderConfiguration(Context context) {
@@ -129,7 +153,7 @@ public class ApngImageLoader extends ImageLoader {
                 .build();
     }
 
-    private ApngImageLoaderCallback getAutoPlayHandler(final ApngConfig config) {
+    private ApngImageLoaderCallback getAutoPlayHandler(final ApngConfig config, final ApngListener apngListener) {
         if (config == null || !config.autoPlay) {
             return null;
         } else {
@@ -139,6 +163,7 @@ public class ApngImageLoader extends ImageLoader {
                     if (!success) return;
                     ApngDrawable apngDrawable = ApngDrawable.getFromView(view);
                     if (apngDrawable == null) return;
+                    apngDrawable.setApngListener(apngListener);
                     if (config.numPlays > 0) apngDrawable.setNumPlays(config.numPlays);
                     apngDrawable.start();
                 }
