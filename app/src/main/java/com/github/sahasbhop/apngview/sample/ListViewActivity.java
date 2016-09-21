@@ -107,7 +107,7 @@ public class ListViewActivity extends AppCompatActivity {
 
             ViewHolder viewHolder = (ViewHolder) convertView.getTag(R.id.tag_image);
             viewHolder.textView.setText(String.valueOf(position + 1));
-            ApngImageLoader.getInstance().displayApng(url, viewHolder.imageView, new ApngImageLoader.ApngConfig(3, true));
+            ApngImageLoader.getInstance().displayApng(url, viewHolder.imageView, new ApngImageLoader.ApngConfig(3, true, false));
 
             return convertView;
         }
