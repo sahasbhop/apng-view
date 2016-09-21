@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.github.sahasbhop.apngview.assist.ApngExtractFrames;
+import com.github.sahasbhop.apngview.assist.ApngListener;
 import com.github.sahasbhop.apngview.assist.AssistUtil;
 import com.github.sahasbhop.apngview.assist.PngImageLoader;
 import com.github.sahasbhop.flog.FLog;
@@ -65,6 +66,8 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	private float mScaling;
     private File baseFile;
 
+	private ApngListener apngListener;
+
     public ApngDrawable(Context context, Bitmap bitmap, Uri uri) {
 		super();
 		
@@ -103,6 +106,21 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	}
 
 	/**
+	 * @return APNG current event listener (if any)
+     */
+	public ApngListener getApngListener() {
+		return apngListener;
+	}
+
+	/**
+	 * Specify an event listener for this APNG
+	 * @param apngListener new listener instance
+     */
+	public void setApngListener(ApngListener apngListener) {
+		this.apngListener = apngListener;
+	}
+
+	/**
 	 * @return number of repeating
 	 */
 	public int getNumPlays() {
@@ -138,6 +156,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
             if (isPrepared) {
                 if (enableVerboseLog) FLog.v("Run");
                 run();
+				if (apngListener != null) apngListener.onAnimationStart(this);
             } else {
                 stop();
             }
@@ -151,6 +170,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	        
 			unscheduleSelf(this);
 			isRunning = false;
+			if (apngListener != null) apngListener.onAnimationEnd(this);
         }
 	}
 
@@ -194,6 +214,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		
 		if (numPlays > 0 && currentFrame == numFrames - 1) {
 			currentLoop++;
+			if (apngListener != null) apngListener.onAnimationRepeat(this);
 			if (enableVerboseLog) FLog.v("Loop count: %d/%d", currentLoop, numPlays);
 		}
 		
@@ -364,6 +385,9 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
                         if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_NONE) {
                             bitmap = getCacheBitmap(i);
+							if (bitmap == null) {
+								FLog.w("Can't retrieve previous APNG_DISPOSE_OP_NONE frame: please try to increase memory cache size!");
+							}
 
                         } else if (tempDisposeOp == PngChunkFCTL.APNG_DISPOSE_OP_BACKGROUND) {
                             if (enableVerboseLog) FLog.v("Create a new bitmap");
