@@ -9,7 +9,7 @@ android {
         minSdkVersion 8
         targetSdkVersion 22
         versionCode 1
-        versionName "1.5"
+        versionName "1.6"
     }
     buildTypes {
         release {

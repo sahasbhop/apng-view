@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ApngView.iml" filepath="$PROJECT_DIR$/ApngView.iml" />
-      <module fileurl="file://$PROJECT_DIR$/apng-view/apng-view.iml" filepath="$PROJECT_DIR$/apng-view/apng-view.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apng-view.iml" filepath="$PROJECT_DIR$/apng-view.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apng-view/apng-view-apng-view.iml" filepath="$PROJECT_DIR$/apng-view/apng-view-apng-view.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
