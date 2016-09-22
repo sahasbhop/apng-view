@@ -62,6 +62,7 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	private int currentLoop;
 	private int numFrames;
 	private int numPlays;
+	private boolean showLastFrameOnStop;
 	
 	private float mScaling;
     private File baseFile;
@@ -141,8 +142,23 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 	public int getNumFrames() {
 		return numFrames;
 	}
-	
-    @Override
+
+	/**
+	 * @return If, on animation end, will be showing the last frame instead of the first
+     */
+	public boolean isShowLastFrameOnStop() {
+		return showLastFrameOnStop;
+	}
+
+	/**
+	 * Specify if, on animation end, will be showing the last frame instead of the first
+	 * @param showLastFrameOnStop true if you want to show the last frame on stop
+     */
+	public void setShowLastFrameOnStop(boolean showLastFrameOnStop) {
+		this.showLastFrameOnStop = showLastFrameOnStop;
+	}
+
+	@Override
 	public void start() {
 		if (!isRunning()) {
 			isRunning = true;
@@ -181,6 +197,11 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 
 	@Override
 	public void run() {
+		if (showLastFrameOnStop && numPlays > 0 && currentLoop >= numPlays) {
+			stop();
+			return;
+		}
+
 		if (currentFrame < 0) {
 			currentFrame = 0;
 
@@ -207,8 +228,8 @@ public class ApngDrawable extends Drawable implements Animatable, Runnable {
 		} else {
 			drawAnimateBitmap(canvas, currentFrame);
 		}
-		
-		if (numPlays > 0 && currentLoop >= numPlays) {
+
+		if (!showLastFrameOnStop && numPlays > 0 && currentLoop >= numPlays) {
 			stop();
 		}
 		

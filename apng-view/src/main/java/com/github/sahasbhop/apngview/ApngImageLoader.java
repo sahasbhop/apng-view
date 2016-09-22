@@ -165,6 +165,7 @@ public class ApngImageLoader extends ImageLoader {
                     if (apngDrawable == null) return;
                     apngDrawable.setApngListener(apngListener);
                     if (config.numPlays > 0) apngDrawable.setNumPlays(config.numPlays);
+                    apngDrawable.setShowLastFrameOnStop(config.showLastFrameOnStop);
                     apngDrawable.start();
                 }
             };
@@ -174,15 +175,18 @@ public class ApngImageLoader extends ImageLoader {
     public static class ApngConfig {
         public int numPlays = 0;
         public boolean autoPlay = false;
+        public boolean showLastFrameOnStop = false;
 
         /**
          * Configuration for controlling APNG behavior
          * @param numPlays Overrides the number of repetition
          * @param autoPlay Start the animation immediately after finish loading an image
+         * @param showLastFrameOnStop On animation end, keep showing the last frame instead of redrawing the first
          */
-        public ApngConfig(int numPlays, boolean autoPlay) {
+        public ApngConfig(int numPlays, boolean autoPlay, boolean showLastFrameOnStop) {
             this.numPlays = numPlays;
             this.autoPlay = autoPlay;
+            this.showLastFrameOnStop = showLastFrameOnStop;
         }
     }
 }
